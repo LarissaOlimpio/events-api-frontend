@@ -2,7 +2,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "@tanstack/react-router";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormData,
+} from "./schemas/forgotPasswordSchema";
 export function ForgotPasswordForm() {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+  const onSubmit = (data: ForgotPasswordFormData) => {
+    console.log(data);
+  };
+
   return (
     <div className="w-full max-w-lg">
       <div className="space-y-2">
@@ -13,11 +30,23 @@ export function ForgotPasswordForm() {
         </p>
       </div>
 
-      <form className="mt-10 space-y-6">
+      <form
+        className="mt-10 space-y-6"
+        noValidate
+        onSubmit={handleSubmit(onSubmit)}
+      >
         <div className="space-y-2">
           <Label htmlFor="email">E-mail</Label>
 
-          <Input id="email" type="email" placeholder="email@empresa.com" />
+          <Input
+            id="email"
+            type="email"
+            placeholder="email@empresa.com"
+            {...register("email")}
+          />
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email.message}</p>
+          )}
         </div>
 
         <Button className="w-full" type="submit">
