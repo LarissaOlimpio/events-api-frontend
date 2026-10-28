@@ -4,7 +4,5 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
-  role: Role;
+  authenticated: boolean;
 }
-export type Role = "VIEWER" | "ORGANIZER" | "ADMIN";

@@ -4,6 +4,9 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupFormData } from "./schemas/signupSchema";
+import { signup } from "@/services/signupService";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 
 export function SignupForm() {
   const {
@@ -13,9 +16,22 @@ export function SignupForm() {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
   });
+  const navigate = useNavigate();
+  const mutation = useMutation({
+    mutationFn: signup,
 
+    onSuccess: () => {
+      navigate({
+        to: "/login",
+      });
+    },
+
+    onError: (error) => {
+      console.error(error);
+    },
+  });
   const onSubmit = (data: SignupFormData) => {
-    console.log(data);
+    mutation.mutate(data);
   };
 
   return (
@@ -75,10 +91,16 @@ export function SignupForm() {
             </p>
           )}
         </div>
-
-        <Button className="w-full" type="submit">
-          Criar conta
-        </Button>
+        <div>
+          {mutation.isError && (
+            <div className="rounded-md border border-red-300 bg-red-50 p-3">
+              <p className="text-sm text-red-600">{mutation.error.message}</p>
+            </div>
+          )}
+          <Button className="w-full" type="submit">
+            Criar conta
+          </Button>
+        </div>
       </form>
     </div>
   );

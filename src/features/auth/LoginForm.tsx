@@ -5,6 +5,9 @@ import { Link } from "@tanstack/react-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { loginSchema, type LoginFormData } from "./schemas/loginSchema";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import { login } from "@/services/authService";
 
 export function LoginForm() {
   const {
@@ -14,9 +17,23 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
+  const loginMutation = useMutation({
+    mutationFn: login,
+
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: ["me"],
+      });
+      navigate({
+        to: "/",
+      });
+    },
+  });
   const onSubmit = (data: LoginFormData) => {
-    console.log(data);
+    loginMutation.mutate(data);
   };
   return (
     <div className="w-full max-w-lg">
@@ -63,9 +80,23 @@ export function LoginForm() {
             Esqueceu sua senha?
           </Link>
         </div>
-        <Button className="w-full" type="submit">
-          Entrar
-        </Button>
+        <div>
+          {loginMutation.isError && (
+            <div className="rounded-md border border-red-300 bg-red-50 p-3">
+              <p className="text-sm text-red-600">
+                {loginMutation.error.message}
+              </p>
+            </div>
+          )}
+          <Button
+            className="w-full"
+            type="submit"
+            disabled={loginMutation.isPending}
+          >
+            {loginMutation.isPending ? "Entrando..." : "Entrar"}
+          </Button>
+        </div>
+
         <div className="text-center text-sm">
           Não tem uma conta?{" "}
           <Link
